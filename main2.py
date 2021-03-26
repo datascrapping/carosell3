@@ -1,6 +1,25 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 
-url = 'https://id.carousell.com/categories/photography-6/'
+site = 'https://anbidev.github.io/gallery/'
 
-user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+response = requests.get(site)
+
+tag = 'img'
+attr = 'src'
+
+soup = BeautifulSoup(response.text, 'html.parser')
+img_tags = soup.find_all(tag)
+
+urls = [img[attr] for img in img_tags]
+#print(urls)
+for url in urls:
+    filename = re.search(r'/([\w_-]+[.](jpg|gif|png))$', url)
+    if not filename:
+        continue
+    with open(filename.group(1), 'wb') as f:
+        if 'http' not in url:
+            url = '{}{}'.format(site, url)
+        response = requests.get(url)
+        f.write(response.content)
